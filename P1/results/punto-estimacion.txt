@@ -1,0 +1,27 @@
+Estimacion en el punto medio
+
+Number of intervals: 10000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589730943508584
+Error: 0.000000000000062172489379
+Time spent: 0.047538
+
+----------------------------------------------
+
+Estimacion en el punto izquierdo
+
+Number of intervals: 10000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592753589987019324781
+Error: 0.000000100000193903326817
+Time spent: 0.079586
+
+---------------------------------------------
+
+Estimacion en el punto derecho
+
+Number of intervals: 10000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592553589986902551345
+Error: 0.000000099999806213446618
+Time spent: 0.088597
