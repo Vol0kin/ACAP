@@ -1,0 +1,101 @@
+-------------------Resultados para 1 procesos-----------------------
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589970751681903
+Error: 0.000000000000177635683940
+Initialization time: 0.010941 seconds
+Computation time: 4.130078 seconds
+Reduce time: 0.000004 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589970751681903
+Error: 0.000000000000177635683940
+Initialization time: 0.009968 seconds
+Computation time: 4.128992 seconds
+Reduce time: 0.000006 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589970751681903
+Error: 0.000000000000177635683940
+Initialization time: 0.010388 seconds
+Computation time: 4.129614 seconds
+Reduce time: 0.000007 seconds
+\n
+-------------------Resultados para 2 procesos-----------------------
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653590007166997111
+Error: 0.000000000000214050999148
+Initialization time: 0.012234 seconds
+Computation time: 2.065498 seconds
+Reduce time: 0.000107 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653590007166997111
+Error: 0.000000000000214050999148
+Initialization time: 0.011471 seconds
+Computation time: 2.065162 seconds
+Reduce time: 0.000122 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653590007166997111
+Error: 0.000000000000214050999148
+Initialization time: 0.011520 seconds
+Computation time: 2.067519 seconds
+Reduce time: 0.000133 seconds
+\n
+-------------------Resultados para 3 procesos-----------------------
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589914796441462
+Error: 0.000000000000121680443499
+Initialization time: 0.011469 seconds
+Computation time: 1.418354 seconds
+Reduce time: 0.000122 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589914796441462
+Error: 0.000000000000121680443499
+Initialization time: 0.012901 seconds
+Computation time: 1.418547 seconds
+Reduce time: 0.000134 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589914796441462
+Error: 0.000000000000121680443499
+Initialization time: 0.011492 seconds
+Computation time: 1.418820 seconds
+Reduce time: 0.000026 seconds
+\n
+
+-------------------Resultados para 4 procesos-----------------------
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589768247002212
+Error: 0.000000000000024868995752
+Initialization time: 0.014823 seconds
+Computation time: 1.096716 seconds
+Reduce time: 0.000287 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589768247002212
+Error: 0.000000000000024868995752
+Initialization time: 0.047699 seconds
+Computation time: 1.146678 seconds
+Reduce time: 0.000030 seconds
+\n
+Number of intervals: 1000000000
+PI is 3.141592653589793115997963
+Estimation of PI is 3.141592653589768247002212
+Error: 0.000000000000024868995752
+Initialization time: 0.023243 seconds
+Computation time: 1.097349 seconds
+Reduce time: 0.000027 seconds
+\n
