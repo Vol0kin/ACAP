@@ -53,13 +53,13 @@ print(f'Tiempo medio de reduccion: {reduce_medio}, std: {reduce_std}')
 print(f'Ganancia: {ganancia}')
 
 # Dibujar valores medios de inicializacion
-plot_lines(x_axis, ini_medio, 'ro-', 'Evolución del tiempo de inicialización', 'Num. computadores', 'Tiempo (s)')
+plot_lines(x_axis, ini_medio, 'ro-', 'Evolución del tiempo de inicialización', 'Num. procesos', 'Tiempo (s)')
 
 # Dibujar valores medios de computo
-plot_lines(x_axis, comp_medio, 'bo-', 'Evolución del tiempo de cómputo', 'Num. computadores', 'Tiempo (s)')
+plot_lines(x_axis, comp_medio, 'bo-', 'Evolución del tiempo de cómputo', 'Num. procesos', 'Tiempo (s)')
 
 # Dibujar valores medios de reduccion
-plot_lines(x_axis, reduce_medio, 'go-', 'Evolución del tiempo de recepción', 'Num. computadores', 'Tiempo (s)')
+plot_lines(x_axis, reduce_medio, 'go-', 'Evolución del tiempo de recepción', 'Num. procesos', 'Tiempo (s)')
 
 width = 0.4
 x_ticks = np.arange(4)
@@ -74,10 +74,10 @@ p3 = plt.bar(x_ticks, reduce_medio, width, bottom=ini_medio + comp_medio)
 plt.xticks(x_ticks, x_axis)
 plt.yticks(np.arange(0, 5, 0.5))
 plt.legend((p1[0], p2[0], p3[0]), ('Inicializacion', 'Cómputo', 'Recepción'))
-plt.title('Tiempo total de ejecución según número de computadores')
+plt.title('Tiempo total de ejecución según número de procesos')
 plt.xlabel('Tiempo (s)')
-plt.ylabel('Num. computadores')
+plt.ylabel('Num. procesos')
 plt.show()
 
 # Dibujar ganancia
-plot_lines(x_axis, ganancia, 'ko-', 'Evolución de la ganancia', 'Num. computadores', 'Ganancia')
+plot_lines(x_axis, ganancia, 'ko-', 'Evolución de la ganancia', 'Num. procesos', 'Ganancia en velocidad')

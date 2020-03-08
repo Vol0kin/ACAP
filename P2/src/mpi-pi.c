@@ -17,9 +17,8 @@ int main(int argc, char * argv[]) {
     t = omp_get_wtime();
 
     MPI_Init(&argc, &argv);
-    //printf("Soy el proceso %d, mi intervalo es %d y mi anchura es %.30f\n", myid, intervals, width);
-    MPI_Comm_size(MPI_COMM_WORLD, & numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, & myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     
     if (myid == 0)
     {
@@ -45,7 +44,7 @@ int main(int argc, char * argv[]) {
         t = omp_get_wtime();
     } 
     
-    // Reduce all values into PI
+    // Reduce all values into pi
     MPI_Reduce(&sum, &pi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (myid == 0)
