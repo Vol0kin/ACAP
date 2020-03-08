@@ -427,9 +427,9 @@ número de procesos:
 \hline
 \textbf{Num. procesos} & \textbf{Ganancia} \\ \hline
 1 & 1 \\ \hline
-2 & 1.99876189 \\ \hline
-3 & 2.91106583 \\ \hline
-4 & 3.70836188 \\ \hline
+2 & 1.99237475 \\ \hline
+3 & 2.89384638 \\ \hline
+4 & 3.62431701 \\ \hline
 \end{tabular}
 \caption{Ganancia en velocidad en función del número de procesos.}
 \label{tab:my-table2}
@@ -442,15 +442,25 @@ número de procesos:
   \label{fig:ganancia}
 \end{figure}
 
-Según podemos ver, la ganancia tiene un valor que se aproxima al número de procesos que
-se estén utilizando, aunque se queda algo por debajo. Vemos que a medida que aumenta el
-número de procesos, la ganancia se va quedando cada vez más por debajo de dicho número.
-Por tanto, aunque en un principio parezca que la ganancia es lineal al número de procesos,
-en realidad la ganancia sería algo inferior a la lineal, ya que de seguir utilizando más
-procesos seguramente se llegaría a que en algún momento la ganancia está bastante por debajo
-del número de procesos utilizado. Por tanto, llegaría un momento en el que añadir más procesos
-no aportaría ninguna mejora; es más, podría incluso llegar a empeorar los tiempos si se tienen en
-cuenta tiempos de creación y de comunicación.
+Para calcular la ganancia se han sumado los tiempos medios de inicialización, cómputo
+y recepción de resultados, de manera que se ha obtenido el tiempo de ejecución completo.
+Una vez hecho esto, se ha calculado la ganancia como:
+
+\begin{equation}
+S(n) = \frac{T(1)}{T(n)}
+\end{equation}
+
+\noindent donde $T(1)$ es el tiempo de un único proceso y $T(n)$ el tiempo con $n$ procesos.
+
+Según podemos ver, la ganancia tiene al principio un valor que se aproxima al del número de
+procesos, dando la impresión de que crece linealmente. No obstante, a medida que se van aumentando
+el número de procesos vemos que la ganancia se va quedando bastante por debajo de dicho número.
+Por tanto, de aquí podemos deducir que la ganancia no es lineal al número de
+procesos, sino que se queda por debajo de esta. Si siguiésemos probando con más procesos, veríamos
+como la ganancia se va quedando cada vez más y más por debajo de la lineal. Por tanto,
+llegaría un momento en el que añadir más procesos no aportaría ninguna mejora; es más, podría
+incluso llegar a empeorar los tiempos si se tienen en cuenta tiempos de creación y de
+comunicación.
 
 De esta forma, podemos decir que la ganancia está acotada a un valor máximo, aunque tendríamos que
 o bien seguir probando con más procesos o bien hacer un estudio teórico para determinar cuál es
@@ -460,7 +470,7 @@ ese valor.
 
 En esta práctica hemos partido de un algoritmo secuencial para el cálculo de $\pi$ y al estudiarlo
 hemos visto que puede ser paralelizado, ya que el bucle del cálculo puede ser fácilmente
-paralelizado.
+repartido entre distintos procesos.
 
 Hemos implementado una versión paralela de este y, tras hacer algunas pruebas y un estudio, hemos
 visto que el tiempo de cálculo se va reduciendo a medida que se utilizan más procesos. Sin

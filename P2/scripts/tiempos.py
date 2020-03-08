@@ -38,13 +38,16 @@ ini_medio = np.array([np.mean(ini1), np.mean(ini2), np.mean(ini3), np.mean(ini4)
 comp_medio = np.array([np.mean(comp1), np.mean(comp2), np.mean(comp3), np.mean(comp4)])
 reduce_medio = np.array([np.mean(reduce1), np.mean(reduce2), np.mean(reduce3), np.mean(reduce4)])
 
+# Calcular valor total
+total = ini_medio + comp_medio + reduce_medio
+
 # Calcular desviaciones
 ini_std = np.array([np.std(ini1), np.std(ini2), np.std(ini3), np.std(ini4)])
 comp_std = np.array([np.std(comp1), np.std(comp2), np.std(comp3), np.std(comp4)])
 reduce_std = np.array([np.std(reduce1), np.std(reduce2), np.std(reduce3), np.std(reduce4)])
 
 # Calcular ganancias
-ganancia = comp_medio[0] / comp_medio
+ganancia = total[0] / total
 
 # Imprimir informacion
 print(f'Tiempo medio de inicializacion: {ini_medio}, std: {ini_std}')
@@ -80,4 +83,4 @@ plt.ylabel('Num. procesos')
 plt.show()
 
 # Dibujar ganancia
-plot_lines(x_axis, ganancia, 'ko-', 'Evolución de la ganancia', 'Num. procesos', 'Ganancia en velocidad')
+plot_lines(x_axis, ganancia, 'co-', 'Evolución de la ganancia', 'Num. procesos', 'Ganancia en velocidad')
