@@ -2,7 +2,7 @@
 \usepackage[spanish,es-nodecimaldot]{babel}	% Utilizar español
 \usepackage[utf8]{inputenc}					% Caracteres UTF-8
 \usepackage{graphicx}						% Imagenes
-\usepackage[hidelinks]{hyperref}			% Poner enlaces sin marcarlos en rojo
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks]{hyperref}			% Poner enlaces sin marcarlos en rojo
 \usepackage{fancyhdr}						% Modificar encabezados y pies de pagina
 \usepackage{float}							% Insertar figuras
 \usepackage[textwidth=390pt]{geometry}		% Anchura de la pagina
@@ -10,14 +10,6 @@
 \usepackage{enumitem}						% Permitir enumerate con distintos simbolos
 \usepackage[T1]{fontenc}					% Usar textsc en sections
 \usepackage{amsmath}						% Símbolos matemáticos
-
-\usepackage[
-backend=biber,
-style=numeric,
-sorting=ynt
-]{biblatex}
- 
-\addbibresource{mybib.bib}
 
 % Comando para poner el nombre de la asignatura
 \newcommand{\asignatura}{Arquitectura y Computación de Altas Prestaciones}
@@ -80,8 +72,6 @@ sorting=ynt
 \end{titlepage}
 
 \pagenumbering{arabic}
-\tableofcontents
-\thispagestyle{empty}				% No usar estilo en la pagina de indice
 
 \newpage
 
@@ -104,7 +94,7 @@ ninguno de ellos desde el tercer cuatrimestre de 2006.
   \centering
   \includegraphics[scale=0.6]{img/cuota-mercado-intel-amd}
   \caption{Cuota de mercado de los procesadores en uso de Intel y AMD desde 2004 hasta la
-  actualidad.}
+  actualidad \cite{passmark}.}
 \end{figure}
 
 Aunque en el gráfico se puede ver que Intel sigue dominando el mercado, la tendencia es a la baja,
@@ -131,7 +121,7 @@ de costar 989 a 590 dólares (40,30\%).
 \begin{figure}[H]
   \centering
   \includegraphics[scale=0.5]{img/procesadores-intel}
-  \caption{Serie de procesadores Intel Core X.}
+  \caption{Serie de procesadores Intel Core X \cite{chapuzas4}.}
 \end{figure}
 
 Además de todo esto, AMD está empezando a ganar terreno en el mercado de los superordenadores.
@@ -148,13 +138,66 @@ competidor directo, y les asegura que van a tener más demanda en los próximos 
 \begin{figure}[H]
   \centering
   \includegraphics[scale=0.7]{img/amd-el-capitan}
-  \caption{Superordenador \textbf{El Capitan}.}
+  \caption{Superordenador \textbf{El Capitan} \cite{venturebeat}.}
 \end{figure}
 
 \newpage
 
-\nocite{*}
-\printbibliography
+\begin{thebibliography}{20}
+
+\bibitem{passmark}
+PassMark Software. \textit{AMD vs Intel Market Share}
+\\\url{https://www.cpubenchmark.net/market_share.html}
+
+\bibitem{chapuzas4}
+El Chapuzas Informático. \textit{Intel anuncia oficialmente sus Cascade Lake-X y formaliza la rebaja de precio en hasta un 50\%}
+\\\url{https://elchapuzasinformatico.com/2019/10/intel-cascade-lake-x-formaliza-la-rebaja-de-precio-en-hasta-un-50/}
+
+\bibitem{venturebeat}
+VentureBeat. \textit{AMD’s top supercomputer wins are a big moment in ‘heated competition’}
+\\\url{https://venturebeat.com/2020/03/05/amds-top-supercomputer-wins-are-a-big-moment-in-heated-competition/}
+
+\bibitem{xataka}
+Xataka. \textit{AMD y Cray preparan un supercomputador bestial: 'Frontier' llegará a los 1,5 exaFLOPS de potencia en 2021}
+\\\url{https://www.xataka.com/investigacion/amd-cray-preparan-supercomputador-bestial-frontier-llegara-a-1-5-exaflops-potencia-2021}
+
+\bibitem{chapuzas1}
+El Chapuzas Informático. \textit{Según PassMark, AMD ha alcanzado una cuota de mercado del 40\%, Intel retrocede 14 años}
+\\\url{https://elchapuzasinformatico.com/2020/01/segun-passmark-amd-ha-alcanzado-una-cuota-de-mercado-del-40-intel-retrocede-14-anos/}
+
+\bibitem{chapuzas1}
+El Chapuzas Informático. \textit{Según PassMark, AMD ha alcanzado una cuota de mercado del 40\%, Intel retrocede 14 años}
+\\\url{https://elchapuzasinformatico.com/2020/01/segun-passmark-amd-ha-alcanzado-una-cuota-de-mercado-del-40-intel-retrocede-14-anos/}
+
+\bibitem{chapuzas2}
+El Chapuzas Informático. \textit{Intel anuncia su 2ª Gen de CPUs Xeon Scalable, ahora un 60\% más baratos para competir con AMD}
+\\\url{https://elchapuzasinformatico.com/2020/02/intel-anuncia-su-2a-gen-de-cpus-xeon-scalable-ahora-un-60-mas-baratos-para-competir-con-amd/}
+
+\bibitem{chapuzas3}
+El Chapuzas Informático. \textit{El Ryzen Threadripper 3990X llegará por 3.990\$ destrozando a 2x Intel Xeon Platinum 8280 de +20.000\$}
+\\\url{https://elchapuzasinformatico.com/2020/02/el-ryzen-threadripper-3990x-llegara-por-3-990-destrozando-a-2x-intel-xeon-platinum-8280-de-20-000/}
+
+\bibitem{chapuzas5}
+El Chapuzas Informático. \textit{Intel reduciría el precio de sus procesadores de consumo para intentar frenar a los AMD Ryzen}
+\\\url{https://elchapuzasinformatico.com/2020/01/intel-reduciria-el-precio-de-sus-procesadores-de-consumo-para-intentar-frenar-a-los-amd-ryzen/}
+
+\bibitem{chapuzas6}
+El Chapuzas Informático. \textit{Las CPUs AMD EPYC 7742 darán vida al superordenador encargado de predecir el tiempo en Europa}
+\\\url{https://elchapuzasinformatico.com/2020/01/las-cpus-amd-epyc-7742-daran-vida-al-superordenador-encargado-de-predecir-el-tiempo-en-europa/}
+
+\bibitem{chapuzas7}
+El Chapuzas Informático. \textit{La NOAA adquiere un superordenador con 5120 procesadores AMD EPYC ROME}
+\\\url{https://elchapuzasinformatico.com/2020/02/la-noaa-adquiere-un-superordenador-con-5120-procesadores-amd-epyc-rome/}
+
+\bibitem{chapuzas8}
+El Chapuzas Informático. \textit{AMD dará vida al superordenador de la Armada de los Estados Unidos con 290.304 núcleos Zen2 @ 7nm}
+\\\url{https://elchapuzasinformatico.com/2020/02/amd-dara-vida-al-superordenador-de-la-armada-de-los-estados-unidos-con-290-304-nucleos-zen2-7nm/}
+
+\bibitem{chapuzas9}
+El Chapuzas Informático. \textit{AMD se lleva el contrato de «El Capitan», el superordenador más potente del mundo}
+\\\url{https://elchapuzasinformatico.com/2020/03/amd-se-lleva-el-contrato-de-el-capitan-el-superordenador-mas-potente-del-mundo/}
+
+\end{thebibliography}
 
 \end{document}
 
