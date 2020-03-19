@@ -3,17 +3,7 @@
 
 using namespace cimg_library;
 
-void expandBorders(const CImg<unsigned char>& src,
-                   CImg<unsigned char>& dst,
-                   unsigned int borderSize,
-                   unsigned int x0,
-                   unsigned int y0,
-                   unsigned int xFinal,
-                   unsigned int yFinal)
-{
-    
-}
-
+// Function to fill edges of the expanded image with a given value
 void fillEdgesWithValue(CImg<unsigned char>& img,
                         unsigned char value,
                         int x0,
@@ -30,6 +20,7 @@ void fillEdgesWithValue(CImg<unsigned char>& img,
     }
 }
 
+// Function to replicate the borders of a given image
 CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, unsigned int borderSize)
 {
     // Create new image adding borders to it
@@ -44,11 +35,56 @@ CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, unsigned
         }
     }
 
+    // Expand right border
+    for (int x = 0; x < borderSize; x++)
+    {
+        for (int y = borderSize; y < image.height() + borderSize; y++)
+        {
+            expandedImage(x, y) = expandedImage(borderSize, y);
+        }
+    }
+
+    // Expand top border
+    for (int x = borderSize; x < image.width() + borderSize; x++)
+    {
+        for (int y = 0; y < borderSize; y++)
+        {
+            expandedImage(x, y) = expandedImage(x, borderSize);
+        }
+    }
+
+    // Expand left border
+    for (int x = image.width() + borderSize; x < expandedImage.width(); x++)
+    {
+        for (int y = borderSize; y < image.height() + borderSize; y++)
+        {
+            expandedImage(x, y) = expandedImage(image.width() + borderSize - 1, y);
+        }
+    }
+
+    // Expand bottom border
+    for (int x = borderSize; x < image.width() + borderSize; x++)
+    {
+        for (int y = image.height() + borderSize; y < expandedImage.height(); y++)
+        {
+            expandedImage(x, y) = expandedImage(x, image.height() + borderSize - 1);
+        }
+    }
+
     // Fill edges
     fillEdgesWithValue(expandedImage, image(0,0), 0, 0, borderSize, borderSize); // Top-left edge
-    fillEdgesWithValue(expandedImage, image(0, image.height() - 1), 0, image.height() + borderSize, borderSize, expandedImage.height()); // Bottom-left edge
-    fillEdgesWithValue(expandedImage, image(image.width() - 1, 0), image.width() + borderSize, 0, expandedImage.width(), borderSize); // Top-right edge
-    fillEdgesWithValue(expandedImage, image(image.width() - 1, image.height() - 1), image.width() + borderSize, image.height() + borderSize, expandedImage.width(), expandedImage.height()); // Bottom-right edge
+
+    fillEdgesWithValue(expandedImage, image(0, image.height() - 1), 0,
+                       image.height() + borderSize, borderSize,
+                       expandedImage.height());                                  // Bottom-left edge
+
+    fillEdgesWithValue(expandedImage, image(image.width() - 1, 0),
+                       image.width() + borderSize, 0, expandedImage.width(),
+                       borderSize);                                              // Top-right edge
+
+    fillEdgesWithValue(expandedImage, image(image.width() - 1, image.height() - 1),
+                       image.width() + borderSize, image.height() + borderSize,
+                       expandedImage.width(), expandedImage.height());           // Bottom-right edge
 
 
 
@@ -78,11 +114,11 @@ int main(int argc, char* argv[])
 
     // Create new empty image
     unsigned int borderSize = KERNEL_SIZE / 2;
-    CImg<unsigned char> expandedImage = addBordersToImage(image, borderSize);
+    image = addBordersToImage(image, borderSize);
 
 
     // Display the image (TEST)
-    CImgDisplay display(expandedImage,  "This is a very cool image");
+    CImgDisplay display(image,  "This is a very cool image");
 
     while (!display.is_closed())
     {
