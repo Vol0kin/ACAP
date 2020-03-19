@@ -1,5 +1,7 @@
 #include "CImg.h"
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 using namespace cimg_library;
 
@@ -91,7 +93,46 @@ CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, unsigned
     return expandedImage;
 }
 
-#define KERNEL_SIZE 111
+std::vector<std::vector<unsigned char>> medianFilter(std::vector<std::vector<unsigned char>> image,
+                                                     int kernelSize)
+{
+    std::vector<std::vector<unsigned char>> filteredImage;
+    int anchor = kernelSize / 2;
+
+    // Iterate over image
+    for (int y = anchor; y < image.size() - anchor; y++)
+    {
+        std::vector<unsigned char> row;
+
+        for (int x = anchor; x < image[0].size() - anchor; x++)
+        {
+            std::vector<unsigned char> area;
+
+            // Create area around the current pixel which has kernelSize x kernelSize pixels
+            for (int i = y - anchor; i <= y + anchor; i++)
+            {
+                for (int j = x - anchor; j <= x + anchor; j++)
+                {
+                    area.push_back(image[i][j]);
+                }
+            }
+
+            // Sort values
+            std::sort(area.begin(), area.end());
+
+            // Find median value
+            unsigned char median = area[area.size() / 2];
+            row.push_back(median);
+        }
+
+        // Add row to the final image
+        filteredImage.push_back(row);
+    }
+
+    return filteredImage;
+}
+
+#define KERNEL_SIZE 3
 
 int main(int argc, char* argv[])
 {
@@ -112,13 +153,41 @@ int main(int argc, char* argv[])
     // Display image information
     std::cout << "Image width: " << image.width() << " Height: " << image.height() << " Depth: " << image.depth() << std::endl;
 
-    // Create new empty image
+    // Add borders to image
     unsigned int borderSize = KERNEL_SIZE / 2;
     image = addBordersToImage(image, borderSize);
 
+    // Get pixels from image
+    unsigned char * pixels = image.data();
+    int numPixels = image.size();
+
+    // Put data into a matrix
+    std::vector<std::vector<unsigned char>> imageData;
+
+    for (int i = 0; i < image.height(); i++)
+    {
+        std::vector<unsigned char> row;
+        row.insert(row.end(), &pixels[i * image.width()], &pixels[(i+1) * image.width()]);
+        imageData.push_back(row);
+    }
+
+    std::vector<std::vector<unsigned char>> correctedImage = medianFilter(imageData, KERNEL_SIZE);
+
+
+    // Create corrected image
+    CImg<unsigned char> finalImage(correctedImage[0].size(), correctedImage.size(), 1, 1, 0);
+
+    for (int y = 0; y < correctedImage.size(); y++)
+    {
+        for (int x = 0; x < correctedImage[0].size(); x++)
+        {
+            finalImage(x, y) = correctedImage[y][x];
+        }
+    }
+
 
     // Display the image (TEST)
-    CImgDisplay display(image,  "This is a very cool image");
+    CImgDisplay display(finalImage,  "This is a very cool image");
 
     while (!display.is_closed())
     {
