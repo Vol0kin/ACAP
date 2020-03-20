@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cstdlib>
+//#include "mpi.h"
 
 using namespace cimg_library;
 
@@ -23,10 +25,12 @@ void fillEdgesWithValue(CImg<unsigned char>& img,
 }
 
 // Function to replicate the borders of a given image
-CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, unsigned int borderSize)
+CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, int borderSize)
 {
     // Create new image adding borders to it
-    CImg<unsigned char> expandedImage(image.width() + 2 * borderSize, image.height() + 2 * borderSize, image.depth(), 1, 0);
+    CImg<unsigned char> expandedImage(image.width() + 2 * borderSize,
+                                      image.height() + 2 * borderSize,
+                                      image.depth(), 1, 0);
 
     // Copy original content in the corresponding positions
     for (int x = 0; x < image.width(); x++)
@@ -93,7 +97,8 @@ CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, unsigned
     return expandedImage;
 }
 
-std::vector<std::vector<unsigned char>> medianFilter(std::vector<std::vector<unsigned char>> image,
+// Median filter function
+std::vector<std::vector<unsigned char>> medianFilter(const std::vector<std::vector<unsigned char>>& image,
                                                      int kernelSize)
 {
     std::vector<std::vector<unsigned char>> filteredImage;
@@ -132,16 +137,17 @@ std::vector<std::vector<unsigned char>> medianFilter(std::vector<std::vector<uns
     return filteredImage;
 }
 
-#define KERNEL_SIZE 3
-
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
         std::cerr << "Error. Expected one argument" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " [path to image]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [path to image] [kernel size]" << std::endl;
         return 1;
     }
+
+    // Get kernel size
+    int kernelSize = atoi(argv[2]);
 
     // Load image
     CImg<unsigned char> image(argv[1]);
@@ -149,12 +155,11 @@ int main(int argc, char* argv[])
     // Use only one of the channels since they're all the same
     image.channel(0);
 
-
     // Display image information
     std::cout << "Image width: " << image.width() << " Height: " << image.height() << " Depth: " << image.depth() << std::endl;
 
     // Add borders to image
-    unsigned int borderSize = KERNEL_SIZE / 2;
+    int borderSize = kernelSize / 2;
     image = addBordersToImage(image, borderSize);
 
     // Get pixels from image
@@ -171,7 +176,7 @@ int main(int argc, char* argv[])
         imageData.push_back(row);
     }
 
-    std::vector<std::vector<unsigned char>> correctedImage = medianFilter(imageData, KERNEL_SIZE);
+    std::vector<std::vector<unsigned char>> correctedImage = medianFilter(imageData, kernelSize);
 
 
     // Create corrected image
