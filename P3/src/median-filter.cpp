@@ -98,27 +98,26 @@ CImg<unsigned char> addBordersToImage(const CImg<unsigned char>& image, int bord
 }
 
 // Median filter function
-std::vector<std::vector<unsigned char>> medianFilter(const std::vector<std::vector<unsigned char>>& image,
-                                                     int kernelSize)
+CImg<unsigned char> medianFilter(const CImg<unsigned char>& image, int kernelSize, int borderSize)
 {
-    std::vector<std::vector<unsigned char>> filteredImage;
+    CImg<unsigned char> filteredImage(image.width() - 2 * borderSize,
+                                      image.height() - 2 * borderSize,
+                                      image.depth(), 1, 0);
     int anchor = kernelSize / 2;
 
     // Iterate over image
-    for (int y = anchor; y < image.size() - anchor; y++)
+    for (int y = anchor; y < image.height() - anchor; y++)
     {
-        std::vector<unsigned char> row;
-
-        for (int x = anchor; x < image[0].size() - anchor; x++)
+        for (int x = anchor; x < image.width() - anchor; x++)
         {
             std::vector<unsigned char> area;
 
             // Create area around the current pixel which has kernelSize x kernelSize pixels
-            for (int i = y - anchor; i <= y + anchor; i++)
+            for (int j = y - anchor; j <= y + anchor; j++)
             {
-                for (int j = x - anchor; j <= x + anchor; j++)
+                for (int i = x - anchor; i <= x + anchor; i++)
                 {
-                    area.push_back(image[i][j]);
+                    area.push_back(image(i, j));
                 }
             }
 
@@ -127,11 +126,8 @@ std::vector<std::vector<unsigned char>> medianFilter(const std::vector<std::vect
 
             // Find median value
             unsigned char median = area[area.size() / 2];
-            row.push_back(median);
+            filteredImage(x - anchor, y - anchor) = median;
         }
-
-        // Add row to the final image
-        filteredImage.push_back(row);
     }
 
     return filteredImage;
@@ -146,8 +142,18 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    int numProcs, myID;
+    //MPI_Status status;
+
     // Get kernel size
     int kernelSize = atoi(argv[2]);
+    int borderSize = kernelSize / 2;
+
+    // Initialize MPI
+    /*MP_Init(&argc, &argv);
+    MP_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MP_Comm_rank(MPI_COMM_WORLD, &myID);*/
+
 
     // Load image
     CImg<unsigned char> image(argv[1]);
@@ -159,36 +165,13 @@ int main(int argc, char* argv[])
     std::cout << "Image width: " << image.width() << " Height: " << image.height() << " Depth: " << image.depth() << std::endl;
 
     // Add borders to image
-    int borderSize = kernelSize / 2;
     image = addBordersToImage(image, borderSize);
 
     // Get pixels from image
     unsigned char * pixels = image.data();
     int numPixels = image.size();
 
-    // Put data into a matrix
-    std::vector<std::vector<unsigned char>> imageData;
-
-    for (int i = 0; i < image.height(); i++)
-    {
-        std::vector<unsigned char> row;
-        row.insert(row.end(), &pixels[i * image.width()], &pixels[(i+1) * image.width()]);
-        imageData.push_back(row);
-    }
-
-    std::vector<std::vector<unsigned char>> correctedImage = medianFilter(imageData, kernelSize);
-
-
-    // Create corrected image
-    CImg<unsigned char> finalImage(correctedImage[0].size(), correctedImage.size(), 1, 1, 0);
-
-    for (int y = 0; y < correctedImage.size(); y++)
-    {
-        for (int x = 0; x < correctedImage[0].size(); x++)
-        {
-            finalImage(x, y) = correctedImage[y][x];
-        }
-    }
+    CImg<unsigned char> finalImage = medianFilter(image, kernelSize, borderSize);
 
 
     // Display the image (TEST)
