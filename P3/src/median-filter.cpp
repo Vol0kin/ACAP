@@ -1,9 +1,9 @@
+#include <mpi.h>
 #include "CImg.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
-//#include "mpi.h"
 
 using namespace cimg_library;
 
@@ -135,37 +135,96 @@ CImg<unsigned char> medianFilter(const CImg<unsigned char>& image, int kernelSiz
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3)
+    if (argc != 5)
     {
         std::cerr << "Error. Expected one argument" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " [path to image] [kernel size]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [path to image] [kernel size] [image width] [image height]" << std::endl;
         return 1;
     }
 
     int numProcs, myID;
-    //MPI_Status status;
+    MPI_Status status;
 
-    // Get kernel size
+    // Get parameters
     int kernelSize = atoi(argv[2]);
+    int width = atoi(argv[3]);
+    int height = atoi(argv[4]);
+
     int borderSize = kernelSize / 2;
 
     // Initialize MPI
-    /*MP_Init(&argc, &argv);
-    MP_Comm_size(MPI_COMM_WORLD, &numProcs);
-    MP_Comm_rank(MPI_COMM_WORLD, &myID);*/
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myID);
+
+    int heightPerProcess = height / numProcs;
+    int widthBorders = width + 2 * borderSize;
+
+    int divideBlockSize = widthBorders * (heightPerProcess + 2 * borderSize);
+    int finalBlockSize = width * heightPerProcess;
+    int offset = borderSize * widthBorders + widthBorders * (heightPerProcess - borderSize);
+
+    // Allocate memory for the pixels which every processs will use
+    unsigned char* blockPixels = new unsigned char[divideBlockSize];
+    std::cout << "Process " << myID << " allocated array of size " << divideBlockSize << " pixels" << std::endl;
+
+    // Process 0 loads image and sends it
+    if (myID == 0)
+    {
+        // Load image
+        CImg<unsigned char> image(argv[1]);
+
+        // Use only one of the channels since they're all the same
+        image.channel(0);
+
+        // Add borders to image
+        CImg<unsigned char> imageWithBorders = addBordersToImage(image, borderSize);
+
+        // Display image information
+        std::cout << "Image width: " << imageWithBorders.width() << " Height: " << imageWithBorders.height() << " Depth: " << imageWithBorders.depth() << std::endl;
+        // Get image pixels
+        unsigned char * pixels = imageWithBorders.data();
+        unsigned char * pixelsIter;
+
+        // Copy the part of the image which the process 0 will use
+        for (int i = 0; i < divideBlockSize; i++)
+        {
+            blockPixels[i] = pixels[i];
+        }
+
+        pixelsIter = pixels + offset; 
+
+        // Send information to all processes
+        for (int dest = 1; dest < numProcs; dest++)
+        {
+            MPI_Send(pixelsIter, divideBlockSize, MPI_UNSIGNED_CHAR, dest, 0, MPI_COMM_WORLD);
+            pixelsIter += offset;
+        }
+    }
+    else
+    {
+        MPI_Recv(blockPixels, divideBlockSize, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, &status);
+        int recv;
+        MPI_Get_count(&status, MPI_UNSIGNED_CHAR, &recv);
+        std::cout << "Received " << recv  <<  std::endl;
+    }
+
+    // Create image that every process will use
+    CImg<unsigned char> processImage(blockPixels, widthBorders, heightPerProcess + 2 * borderSize, 1, 1, false);
+    std::cout << "Process " << myID << " width: " <<  processImage.width() << " height: " << processImage.height() << " first: " << (int)processImage(0, 0) << " last-first: " << (int)processImage(0, 129) << std::endl;
+
+    CImgDisplay display(processImage, "Aaaa");
+
+    while (!display.is_closed())
+    {
+        display.wait();
+    }
+
+    MPI_Finalize();
+
+/*
 
 
-    // Load image
-    CImg<unsigned char> image(argv[1]);
-
-    // Use only one of the channels since they're all the same
-    image.channel(0);
-
-    // Display image information
-    std::cout << "Image width: " << image.width() << " Height: " << image.height() << " Depth: " << image.depth() << std::endl;
-
-    // Add borders to image
-    image = addBordersToImage(image, borderSize);
 
     // Get pixels from image
     unsigned char * pixels = image.data();
@@ -180,7 +239,7 @@ int main(int argc, char* argv[])
     while (!display.is_closed())
     {
         display.wait();
-    }
+    }*/
 
     return 0;
 }
