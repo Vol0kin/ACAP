@@ -143,6 +143,7 @@ int main(int argc, char* argv[])
     }
 
     int numProcs, myID;
+    unsigned char * mergePixels;
     MPI_Status status;
 
     // Get parameters
@@ -151,6 +152,7 @@ int main(int argc, char* argv[])
     int height = atoi(argv[4]);
 
     int borderSize = kernelSize / 2;
+    int widthBorders = width + 2 * borderSize;
 
     // Initialize MPI
     MPI_Init(&argc, &argv);
@@ -158,15 +160,13 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myID);
 
     int heightPerProcess = height / numProcs;
-    int widthBorders = width + 2 * borderSize;
 
     int divideBlockSize = widthBorders * (heightPerProcess + 2 * borderSize);
-    int finalBlockSize = width * heightPerProcess;
+    int filteredBlockSize = width * heightPerProcess;
     int offset = borderSize * widthBorders + widthBorders * (heightPerProcess - borderSize);
 
     // Allocate memory for the pixels which every processs will use
     unsigned char* blockPixels = new unsigned char[divideBlockSize];
-    std::cout << "Process " << myID << " allocated array of size " << divideBlockSize << " pixels" << std::endl;
 
     // Process 0 loads image and sends it
     if (myID == 0)
@@ -180,11 +180,8 @@ int main(int argc, char* argv[])
         // Add borders to image
         CImg<unsigned char> imageWithBorders = addBordersToImage(image, borderSize);
 
-        // Display image information
-        std::cout << "Image width: " << imageWithBorders.width() << " Height: " << imageWithBorders.height() << " Depth: " << imageWithBorders.depth() << std::endl;
         // Get image pixels
         unsigned char * pixels = imageWithBorders.data();
-        unsigned char * pixelsIter;
 
         // Copy the part of the image which the process 0 will use
         for (int i = 0; i < divideBlockSize; i++)
@@ -192,54 +189,62 @@ int main(int argc, char* argv[])
             blockPixels[i] = pixels[i];
         }
 
-        pixelsIter = pixels + offset; 
-
-        // Send information to all processes
-        for (int dest = 1; dest < numProcs; dest++)
+        // Send information to each processes
+        for (int id = 1; id < numProcs; id++)
         {
-            MPI_Send(pixelsIter, divideBlockSize, MPI_UNSIGNED_CHAR, dest, 0, MPI_COMM_WORLD);
-            pixelsIter += offset;
+            MPI_Send(pixels + offset * id, divideBlockSize, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD);
         }
     }
     else
     {
         MPI_Recv(blockPixels, divideBlockSize, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, &status);
-        int recv;
-        MPI_Get_count(&status, MPI_UNSIGNED_CHAR, &recv);
-        std::cout << "Received " << recv  <<  std::endl;
     }
 
     // Create image that every process will use
     CImg<unsigned char> processImage(blockPixels, widthBorders, heightPerProcess + 2 * borderSize, 1, 1, false);
-    std::cout << "Process " << myID << " width: " <<  processImage.width() << " height: " << processImage.height() << " first: " << (int)processImage(0, 0) << " last-first: " << (int)processImage(0, 129) << std::endl;
 
-    CImgDisplay display(processImage, "Aaaa");
+    // Apply median filter to the image and get pixels
+    CImg<unsigned char> filteredImage = medianFilter(processImage, kernelSize, borderSize);
+    unsigned char * filteredPixels = filteredImage.data();
 
-    while (!display.is_closed())
+    if (myID == 0)
     {
-        display.wait();
+        // Allocate memory for array that will contain all of the pixels
+        mergePixels = new unsigned char[width * height];
+
+        // Copy the pixels from process 0
+        for (int i = 0; i < filteredImage.size(); i++)
+        {
+            mergePixels[i] = filteredPixels[i];
+        }
+
+        // Receive pixels from all processes
+        for (int id = 1; id < numProcs; id++)
+        {
+            MPI_Recv(mergePixels + filteredBlockSize * id, filteredBlockSize, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD, &status);
+        }
     }
+    else
+    {
+        MPI_Send(filteredPixels, filteredBlockSize, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+    }
+
+    delete[] blockPixels;
 
     MPI_Finalize();
 
-/*
-
-
-
-    // Get pixels from image
-    unsigned char * pixels = image.data();
-    int numPixels = image.size();
-
-    CImg<unsigned char> finalImage = medianFilter(image, kernelSize, borderSize);
-
-
-    // Display the image (TEST)
-    CImgDisplay display(finalImage,  "This is a very cool image");
-
-    while (!display.is_closed())
+    if (myID == 0)
     {
-        display.wait();
-    }*/
+        CImg<unsigned char> finalImage(mergePixels, width, height, 1, 1, false);
+        CImgDisplay display(finalImage,  "This is a very cool image");
+
+        while (!display.is_closed())
+        {
+            display.wait();
+        }
+
+        delete[] mergePixels;
+    }
 
     return 0;
 }
