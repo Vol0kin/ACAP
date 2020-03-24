@@ -22,5 +22,5 @@ def sp_noise(image,prob):
     return output
 
 image = cv2.imread(sys.argv[1], 0) # Only for grayscale image
-noise_img = sp_noise(image,0.2)
+noise_img = sp_noise(image,0.1)
 cv2.imwrite(sys.argv[2], noise_img)
