@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include <omp.h>
 
 using namespace cimg_library;
 
@@ -145,6 +146,7 @@ int main(int argc, char* argv[])
     int numProcs, myID;
     unsigned char * mergePixels;
     MPI_Status status;
+    double initTime, compTime, recvTime, totalTime, t;
 
     // Get parameters
     int kernelSize = atoi(argv[2]);
@@ -153,6 +155,8 @@ int main(int argc, char* argv[])
 
     int borderSize = kernelSize / 2;
     int widthBorders = width + 2 * borderSize;
+
+    t = omp_get_wtime();
 
     // Initialize MPI
     MPI_Init(&argc, &argv);
@@ -194,6 +198,10 @@ int main(int argc, char* argv[])
         {
             MPI_Send(pixels + offset * id, divideBlockSize, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD);
         }
+
+        // Get initialization time
+        initTime = omp_get_wtime() - t;
+        t = omp_get_wtime();
     }
     else
     {
@@ -209,6 +217,10 @@ int main(int argc, char* argv[])
 
     if (myID == 0)
     {
+        // Get computation time
+        compTime = omp_get_wtime() - t;
+        t = omp_get_wtime();
+
         // Allocate memory for array that will contain all of the pixels
         mergePixels = new unsigned char[width * height];
 
@@ -223,6 +235,12 @@ int main(int argc, char* argv[])
         {
             MPI_Recv(mergePixels + filteredBlockSize * id, filteredBlockSize, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD, &status);
         }
+
+        // Get receive time
+        recvTime = omp_get_wtime() - t;
+
+        // Get total time
+        totalTime = initTime + compTime + recvTime;
     }
     else
     {
@@ -235,6 +253,7 @@ int main(int argc, char* argv[])
 
     if (myID == 0)
     {
+        std::cout << initTime << "," << compTime << "," << recvTime << "," << totalTime << std::endl;
         CImg<unsigned char> finalImage(mergePixels, width, height, 1, 1, false);
         CImgDisplay display(finalImage,  "This is a very cool image");
 
