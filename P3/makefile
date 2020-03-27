@@ -3,6 +3,7 @@ SRC = src
 BIN = bin
 INCLUDE = include
 FLAGS = -lm -lpthread -lX11 -O2
+JPEG = -ljpeg
 FOMP = -fopenmp
 CXX = g++
 MPI = mpiCC

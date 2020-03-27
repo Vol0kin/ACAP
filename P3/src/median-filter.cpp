@@ -1,4 +1,5 @@
 #include <mpi.h>
+//#define cimg_use_jpeg
 #include "CImg.h"
 #include <iostream>
 #include <vector>
@@ -253,14 +254,8 @@ int main(int argc, char* argv[])
 
     if (myID == 0)
     {
-        std::cout << initTime << "," << compTime << "," << recvTime << "," << totalTime << std::endl;
         CImg<unsigned char> finalImage(mergePixels, width, height, 1, 1, false);
-        CImgDisplay display(finalImage,  "This is a very cool image");
-
-        while (!display.is_closed())
-        {
-            display.wait();
-        }
+        std::cout << numProcs << "," << initTime << "," << compTime << "," << recvTime << "," << totalTime << std::endl;
 
         delete[] mergePixels;
     }
