@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
 
     CImg<unsigned char> finalImage = medianFilter(image, kernelSize, borderSize);
 
-    // Display the image (TEST)
+    // Display the image
     CImgDisplay display(finalImage,  "This is a very cool image");
 
     while (!display.is_closed())
