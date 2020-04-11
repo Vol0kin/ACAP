@@ -3,6 +3,9 @@
 #include <math.h>
 #include <omp.h>
 
+/*
+ * Function that allocates an array of N floats
+ */
 void allocate_array(float **array, int N)
 {
     *array = (float*)malloc(N * sizeof(float));
@@ -14,7 +17,11 @@ void allocate_array(float **array, int N)
     }
 }
 
-void read_file(char* file, float** array, int* N)
+/*
+ * Function that reads a file and writes its content repeated n_rep times
+ * in an array of size N * n_rep
+ */
+void read_file(char* file, float** array, int* N, int n_rep)
 {
     FILE *fp;
     char *line = NULL;
@@ -34,7 +41,7 @@ void read_file(char* file, float** array, int* N)
     // Array elements are duplicated
     read = getline(&line, &len, fp);
     int n_elements = atoi(line);
-    *N = n_elements * 2;
+    *N = n_elements * n_rep;
 
     // Allocate memory
     allocate_array(array, *N);
@@ -42,18 +49,26 @@ void read_file(char* file, float** array, int* N)
     // Read file and load its values
     float value;
     int i = 0;
+    int j;
 
     while((read = getline(&line, &len, fp)) != -1)
     {
         value = atof(line);
 
         (*array)[i] = value;
-        (*array)[i + n_elements] = value;
+
+        for (j = 1; j < n_rep; j++)
+        {
+            (*array)[i + j * n_elements] = value;
+        }
 
         i++;
     }
 }
 
+/*
+ * Function that adds two arrays using a mathematical formula
+ */
 void add_vectors(float *A, float *B, float *C, int N)
 {
     int i;
@@ -66,20 +81,21 @@ void add_vectors(float *A, float *B, float *C, int N)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        printf("ERROR. Expected two arguments\n");
-        printf("Usage: %s [input data 1] [input data 2]\n", argv[0]);
+        printf("ERROR. Expected 3 arguments\n");
+        printf("Usage: %s [input data 1] [input data 2] [n_rep]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
     double t1, t_time;
     float *A, *B, *C;
     int N;
+    int n_rep = atoi(argv[3]);
 
     // Read files and allocate arrays
-    read_file(argv[1], &A, &N);
-    read_file(argv[2], &B, &N);
+    read_file(argv[1], &A, &N, n_rep);
+    read_file(argv[2], &B, &N, n_rep);
     allocate_array(&C, N);
 
     // Add vectors
@@ -91,7 +107,8 @@ int main(int argc, char* argv[])
 
     // Show some values
     printf("C[0] = %f\nC[1] = %f\nC[%d] = %f\nC[%d] = %f\n", C[0], C[1], N-2, C[N-2], N-1, C[N-1]);
-    printf("Total time: %f\n", t_time);
+    printf("N. elements, Total time\n");
+    printf("%d, %f\n", N, t_time);
 
     // Free memory
     free(A);
