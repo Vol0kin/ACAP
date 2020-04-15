@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     // Show some values
     printf("C[0] = %f\nC[1] = %f\nC[%d] = %f\nC[%d] = %f\n", C[0], C[1], N-2, C[N-2], N-1, C[N-1]);
     printf("N. elements, Total time\n");
-    printf("%d, %f\n", N, t_time);
+    printf("%d,%f\n", N, t_time);
 
     // Free memory
     free(A);

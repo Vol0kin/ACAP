@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
     printf("h_C[0] = %f\nh_C[1] = %f\nh_C[%d] = %f\nh_C[%d] = %f\n",
             h_C[0], h_C[1], N-2, h_C[N-2], N-1, h_C[N-1]);
     printf("N. elements, Total time\n");
-    printf("%d, %f\n", N, t_time);
+    printf("%d,%f\n", N, t_time);
 
     // Free memory
     free(h_A);

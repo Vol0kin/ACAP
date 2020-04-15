@@ -1,0 +1,10 @@
+Device number: 0
+ Device name: GeForce GTX 1050
+ Number of SMs: 5
+ Number of SPs per SM: 128
+ Total Number of SPs: 640
+ Total Available Global Memory Size (MB): 4040
+ Shared Memory Per SM (KB): 96
+ Shared Memory Per Block (KB): 48
+ Max. Threads Per Block: 1024
+ Max. Threads Per Dimension: x: 1024, y: 1024, z: 64
