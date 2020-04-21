@@ -120,7 +120,7 @@ uno. A continuación se proporciona el código comentado:
 unsigned int dimHebras = 128 / 2; // dimHebras = 64
 
 // sumaParcial[2*64] -> sumaParcial[128]
-__ shared__ float sumaParcial[2*dimHebras];
+__shared__ float sumaParcial[2*dimHebras];
 
 unsigned int h = id_hebra; // h = 20
 
@@ -147,7 +147,7 @@ del vector de entrada tendrían las dos primeras hebras de cada bloque.
 unsigned int dimHebras = 16 / 2; // dimHebras = 8
 
 // sumaParcial[2*8] -> sumaParcial[16]
-__ shared__ float sumaParcial[2*dimHebras];
+__shared__ float sumaParcial[2*dimHebras];
 
 unsigned int h = id_hebra; // h = 0
 
@@ -167,7 +167,7 @@ sumaParcial[N+h]=Input[start+dimHebras+h];
 unsigned int dimHebras = 16 / 2; // dimHebras = 8
 
 // sumaParcial[2*8] -> sumaParcial[16]
-__ shared__ float sumaParcial[2*dimHebras];
+__shared__ float sumaParcial[2*dimHebras];
 
 unsigned int h = id_hebra; // h = 1
 
@@ -187,7 +187,7 @@ sumaParcial[N+h]=Input[start+dimHebras+h];
 unsigned int dimHebras = 16 / 2; // dimHebras = 8
 
 // sumaParcial[2*8] -> sumaParcial[16]
-__ shared__ float sumaParcial[2*dimHebras];
+__shared__ float sumaParcial[2*dimHebras];
 
 unsigned int h = id_hebra; // h = 0
 
@@ -201,20 +201,20 @@ sumaParcial[h]=Input[start+h];
 sumaParcial[N+h]=Input[start+dimHebras+h];
 \end{lstlisting}
 
-\subsection{Hebra 1 del bloque 0}
+\subsection{Hebra 1 del bloque 1}
 
 \begin{lstlisting}
 unsigned int dimHebras = 16 / 2; // dimHebras = 8
 
 // sumaParcial[2*8] -> sumaParcial[16]
-__ shared__ float sumaParcial[2*dimHebras];
+__shared__ float sumaParcial[2*dimHebras];
 
 unsigned int h = id_hebra; // h = 1
 
 // start = 2 * 1 * 8 = 16
 unsigned int start=2*id_bloque*dimHebras;
 
-// sumaParcial[0] = Input[16 + 1] -> sumaParcial[1] = Input[16]
+// sumaParcial[1] = Input[16 + 1] -> sumaParcial[1] = Input[17]
 sumaParcial[h]=Input[start+h];
 
 // sumaParcial[8+1]=Input[16+8+1] -> sumaParcial[9] = Input[25]
