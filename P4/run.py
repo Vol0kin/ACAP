@@ -11,6 +11,10 @@ if not len(sys.argv) == 2:
 data_dir = 'data'
 dirs = os.listdir(data_dir)
 dirs.sort()
+dirs.remove('3')
+dirs.remove('9')
+
+print(dirs)
 
 # Define paths for each binary and group them according to their functionality
 specs_binary = 'bin/deviceProperties'

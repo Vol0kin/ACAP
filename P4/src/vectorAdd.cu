@@ -99,26 +99,23 @@ int main(int argc, char* argv[])
     read_file(argv[2], &h_B, &N, n_rep);
     allocate_array(&h_C, N);
 
-    // Allocate CUDA arrays and copy data
+    // Allocate CUDA arrays
     float *d_A, *d_B, *d_C;
 
     cudaMalloc(&d_A, N * sizeof(float));
     cudaMalloc(&d_B, N * sizeof(float));
     cudaMalloc(&d_C, N * sizeof(float));
 
-    cudaMemcpy(d_A, h_A, N * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B, N * sizeof(float), cudaMemcpyHostToDevice);
-
-
     // Set number of threads and blocks
-
-    // Use 1024 threads per block since the device supports it
-    int DIM_BLOCK = 1 << 10;
+    int DIM_BLOCK = 128;
     int DIM_GRID = ((N - 1) / DIM_BLOCK) + 1;
-
     
     // Add vectors and retrieve information from device
     t1 = omp_get_wtime();
+    
+    // Copy values
+    cudaMemcpy(d_A, h_A, N * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, N * sizeof(float), cudaMemcpyHostToDevice);
 
     addVectorsKernel<<<DIM_GRID, DIM_BLOCK>>>(d_A, d_B, d_C, N);
 

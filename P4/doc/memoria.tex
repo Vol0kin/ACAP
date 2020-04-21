@@ -369,16 +369,14 @@ de la correspondiente gráfica:
 \begin{tabular}{|c|c|c|}
 \hline
 \textbf{\begin{tabular}[c]{@{}c@{}}Tamaño de\\ los vectores\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo secuencial\\ (s)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo CUDA\\ (s)\end{tabular}} \\ \hline
-500 & 0.000386 & 0.000039 \\ \hline
-500 & 0.000394 & 0.000041 \\ \hline
-5125 & 0.000961 & 0.000067 \\ \hline
-10240 & 0.001891 & 0.00011 \\ \hline
-20480 & 0.003607 & 0.000206 \\ \hline
-25000 & 0.004517 & 0.000279 \\ \hline
-30000 & 0.005243 & 0.000301 \\ \hline
-45000 & 0.007347 & 0.000432 \\ \hline
-45000 & 0.007437 & 0.000435 \\ \hline
-163840 & 0.026749 & 0.001523 \\ \hline
+500 & 0.000357 & 0.000049 \\ \hline
+5125 & 0.000952 & 0.000086 \\ \hline
+10240 & 0.001887 & 0.000139 \\ \hline
+20480 & 0.003761 & 0.00025 \\ \hline
+25000 & 0.004338 & 0.000298 \\ \hline
+30000 & 0.005056 & 0.000361 \\ \hline
+45000 & 0.007283 & 0.000512 \\ \hline
+163840 & 0.02738 & 0.001758 \\ \hline
 \end{tabular}
 \caption{Tiempo de ejecución secuencial y paralelo con \texttt{CUDA} para cada problema.}
 \label{tab:times}
@@ -417,16 +415,14 @@ de la ganancia:
 \begin{tabular}{|c|c|}
 \hline
 \textbf{\begin{tabular}[c]{@{}c@{}}Tamaño de\\ los vectores\end{tabular}} & \textbf{Ganancia} \\ \hline
-500 & 9.8974359 \\ \hline
-500 & 9.6097561 \\ \hline
-5125 & 14.34328358 \\ \hline
-10240 & 17.19090909 \\ \hline
-20480 & 17.50970874 \\ \hline
-25000 & 16.18996416 \\ \hline
-30000 & 17.41860465 \\ \hline
-45000 & 17.00694444 \\ \hline
-45000 & 17.09655172 \\ \hline
-163840 & 17.56336179 \\ \hline
+500 & 7.28571429 \\ \hline
+5125 & 11.06976744 \\ \hline
+10240 & 13.57553957 \\ \hline
+20480 & 15.044 \\ \hline
+25000 & 14.55704698 \\ \hline
+30000 & 14.00554017 \\ \hline
+45000 & 14.22460938 \\ \hline
+163840 & 15.5745165 \\ \hline
 \end{tabular}
 \caption{Ganancia para cada problema.}
 \label{tab:speedup}

@@ -33,13 +33,8 @@ plt.grid()
 plt.show()
 
 # Plot speedup
-ax = plt.gca()
-x = [n for n in range(len(speedup))]
 
-ax.set_xticks(x)
-ax.set_xticklabels(df_seq['Tamaño vector'].values)
-
-plt.plot(x, speedup, 'g-o')
+plt.bar([f'{s}' for s in df_seq['Tamaño vector'].values], speedup, color='g', width=0.5)
 plt.xlabel('Tamaño vector')
 plt.ylabel('Ganancia')
 
