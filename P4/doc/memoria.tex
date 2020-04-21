@@ -146,8 +146,10 @@ En este caso, se ha decidido \textbf{que se van a tener 5 copias de los vectores
 es decir, que los vectores van a tener una longitud de $5n$, donde $n$ es el tamaño
 original especificado en los archivos proporcionados.
 
-Para cada uno de los nueve problemas proporcionados se van a tomar medidas
-de tiempo de lo que se tarda en hacer todas las operaciones con los dos programas.
+De los diez problemas proporcionados se han descartado los problemas 3 y 9 debido a que
+tienen los mismos tamaños que otros problemas, más en concreto tienen los mismos tamaños que los
+problemas 0 y 4, respectivamente. Para cada uno de los ocho problemas restantes se van a tomar
+medidas de tiempo de lo que se tarda en hacer todas las operaciones con los dos programas.
 Con ellas se representará la evolución del tiempo de ejecución en cada caso en función
 del tamaño del problema y se hará un estudio de la ganancia.
 
@@ -280,26 +282,23 @@ Dentro del programa principal también han habido algunos cambios. En el siguien
 de código se puede ver lo más destacable de las modificaciones llevadas a cabo:
 
 \begin{lstlisting}
-// Allocate CUDA arrays and copy data
+// Allocate CUDA arrays
 float *d_A, *d_B, *d_C;
 
 cudaMalloc(&d_A, N * sizeof(float));
 cudaMalloc(&d_B, N * sizeof(float));
 cudaMalloc(&d_C, N * sizeof(float));
 
-cudaMemcpy(d_A, h_A, N * sizeof(float), cudaMemcpyHostToDevice);
-cudaMemcpy(d_B, h_B, N * sizeof(float), cudaMemcpyHostToDevice);
-
-
 // Set number of threads and blocks
-
-// Use 1024 threads per block since the device supports it
-int DIM_BLOCK = 1 << 10;
+int DIM_BLOCK = 128;
 int DIM_GRID = ((N - 1) / DIM_BLOCK) + 1;
-
     
 // Add vectors and retrieve information from device
 t1 = omp_get_wtime();
+    
+// Copy values
+cudaMemcpy(d_A, h_A, N * sizeof(float), cudaMemcpyHostToDevice);
+cudaMemcpy(d_B, h_B, N * sizeof(float), cudaMemcpyHostToDevice);
 
 addVectorsKernel<<<DIM_GRID, DIM_BLOCK>>>(d_A, d_B, d_C, N);
 
@@ -309,18 +308,15 @@ t_time = omp_get_wtime() - t1;
 \end{lstlisting}
 
 Vemos que lo primero que se hace es declarar los arrays que van a estar en el dispositivo
-y se reserva memoria para ellos. Una vez hecho esto, se copian los vectores \texttt{h\_A}
-y \texttt{h\_B} en las correspondientes variables. Es importante destacar que a la hora
-de copiar se especifica el parámetro \texttt{cudaMemcpyHostToDevice}, el cuál indica que
-se copie del \textit{host} al dispositivo (la tarjeta gráfica).
-
-Una vez hecho esto, se ha procedido a determinar el tamaño del bloque (\texttt{DIM\_BLOCK})
-y el número de bloques o tamaño del \textit{grid} (\texttt{DIM\_GRID}). Se ha especificado
-que el tamaño del bloque sea de 1024 hebras, que es el valor máximo que puede tener, tal y
-como hemos visto en las especificaciones del dispositivo. Se ha elegido este número porque
-se ha considerado que es un número suficiente de hebras, además de porque es un múltiplo de
-32, que es el tamaño del \textit{warp} o el número de hebras que ejecuta cada \texttt{CUDA}
-core. Por otra parte, el número de bloques se ha escogido según la siguiente expresión:
+y se reserva memoria para ellos. Una vez reservada la memoria se procede a
+determinar el tamaño del bloque (\texttt{DIM\_BLOCK}) y el número de bloques o tamaño del
+\textit{grid} (\texttt{DIM\_GRID}). Se ha especificado que el tamaño del bloque sea de 128
+hebras debido a que es un múltiplo de 32, que es el tamaño del \textit{warp} de hebras que
+es planificado y enviado a ejecutar, además de que es el mismo número que el de SPs por SM,
+lo cuál permitiría ejecutar un bloque entero a la vez en un SM. Aparte, se han hecho algunas
+pruebas con distintos tamaños de bloque y este ha dado unos resultados bastante buenos, con lo
+cuál se considera que, en general, puede funcionar bien para distintos tamaños. Por otra parte,
+el número de bloques se ha escogido según la siguiente expresión:
 
 \begin{equation}
 \texttt{DIM\_GRID} = \frac{N - 1}{\texttt{DIM\_BLOCK}} + 1
@@ -328,7 +324,7 @@ core. Por otra parte, el número de bloques se ha escogido según la siguiente e
 \end{equation}
 
 \noindent donde $N$ es el número de elementos del vector y la fracción es una división
-entera. Al escoger el número de bloques de esta forma nos aseguramos de que siempre hay
+entera. Al escoger el número de bloques de esta forma nos aseguramos de que siempre sea
 el número exacto de bloques, aunque en uno de ellos no se usen todas las hebras para hacer
 cómputos. Si calculásemos el número de bloques como $\frac{N}{\texttt{DIM\_BLOCK}}$ el resultado
 solo sería correcto si $N$ fuese múltiplo del tamaño del bloque. En el caso de que por ejemplo
@@ -337,11 +333,16 @@ ya que siempre tiene que haber al menos un bloque. Si $N$ no fuese un múltiplo 
 hacer la división se estaría subestimando el número de bloques necesarios, ya que el resultado
 de la división entera sería menor al número real de bloques necearios.
 
-Después de eso se ejecuta el \textit{kernel} de la forma que se puede ver en la línea 22.
+Habiendo hecho esto llega la sección en la que se miden los tiempos, donde se ejecuta el
+\textit{kernel} declarado anteriormente. Primero se copian los vectores \texttt{h\_A}
+y \texttt{h\_B} en las correspondientes variables. Es importante destacar que a la hora
+de copiar se especifica el parámetro \texttt{cudaMemcpyHostToDevice}, el cuál indica que
+se copie del \textit{host} al dispositivo (la tarjeta gráfica). Una vez hecho esto
+se ejecuta el \textit{kernel} de la forma que se puede ver en la línea 22.
 Finalmente se copian los datos del vector que está en el dispositivo al vector que se encuentra
-en el \textit{host} (línea 24). Es importante destacar que en esta ocasión para transferir
-los datos del dispositivo al \textit{host} se ha especificado la opción
-\texttt{cudaMemcpyDeviceToHost}.
+en el \textit{host} (línea 24) y se mide la diferencia de tiempos. Es importante destacar que en
+esta ocasión para transferir los datos del dispositivo al \textit{host} se ha especificado la
+opción \texttt{cudaMemcpyDeviceToHost}.
 
 \section{Experimentación y resultados}
 
@@ -351,18 +352,18 @@ vectores de entrada, de forma que el tamaño original se verá multiplicado por 
 de compilar los programas no se ha utilizado optimización, de forma que la comparación sea
 justa.
 
-Se han medido los tiempos para cada problema y se han ordenado según el tamaño de los vectores
-de entrada. Hay algunos problemas que tienen el mismo tamaño, de forma que aparecerá el mismo
-tamaño con distintos tiempos. Se han creado una tabla y una gráfica que muestran los resultados.
-Una vez hecho esto, se ha calculado la ganancia para un tamaño determinado con la siguiente
-expresión:
+Se han medido los tiempos para cada problema probado y se han ordenado dichas medidas
+según el tamaño del problema (el tamaño de los vectores de entrada). Se han creado tanto una
+tabla como una gráfica que muestran los resultados. Una vez hecho esto, se ha calculado la
+ganancia para un tamaño determinado con la siguiente expresión:
 
 \begin{equation}
 S_{tam} = \frac{T^{tam}_s}{T^{tam}_p}
 \end{equation}
 
-A continuación se puede ver la tabla con los tiempos de ejecución para cada caso, además
-de la correspondiente gráfica:
+Una vez dicho esto, vamos a ver los resultados obtenidos para la versión secuencial y la
+paralela de forma conjunta. A continuación se puede ver la tabla de tiempos, acompañada
+de su correspondiente gráfica:
 
 \begin{table}[H]
 \centering
@@ -396,17 +397,37 @@ de la CPU están optimizadas para que tarden muy pocos ciclos, mientras que las 
 tarjeta no lo están, pero al ser procesadores de tipo SIMT
 (\textit{Single Instruction Multiple Threads}), pueden ejecutar una misma
 instrucción sobre múltiples hebras a la vez, lo cuál permite reducir drásticamente los tiempos
-de ejecución.
+de ejecución al procesar una mayor cantidad de información a la vez.
 
 Vemos también que en ambos casos los tiempos de ejecución van aumentando de manera parecida
 a medida que va aumentando el tamaño del problema, lo cuál es esperable. El ratio al que crecen
-es más o menos parecido excepto al principio, es decir, cuando se pasa de 500 a 10240 elementos.
+es más o menos parecido excepto al principio, es decir, cuando se pasa de 500 a 20480 elementos.
 En este caso, el tiempo secuencial experimenta un crecimiento algo más pronunciado que el
 paralelo, pero a partir de ahí parece que crecen en más o menos la misma medida, estando,
 obviamente, siempre el tiempo paralelo varios órdenes de magnitud por debajo del secuencial.
 
+Al observar los tiempos podemos sacar también una serie de conclusiones. Una de ellas es que, al
+estar el tiempo de ejecución en la \texttt{GPU} por debajo del secuencial para todos los tamaños,
+podemos afirmar que en todos los casos ha merecido la pena paralelizar, ya que siempre
+hemos tardado menos tiempo con el programa paralelo. Para problemas más grandes, las diferencias
+de tiempo también serán bastante notables, ganando siempre la \texttt{GPU}.
+
+Por la forma en la que crecen los tiempos podemos concluir también que, para problemas más
+pequeños que el más pequeño que aparece reflejado en la gráfica, el tiempo de ejecución del
+programa secuencial podría ser menor al del paralelo, debido a que no habría transferencia de
+datos entre la memoria principal y la memoria global del dispositivo, lo cuál es un gran cuello
+de botella y donde se pasa una gran cantidad de tiempo. Por tanto, eso nos indicaría que
+para problemas realmente pequeños utiliar la tarjeta gráfica sería como matar moscas
+a cañonazos.
+
+Finalmente, el hecho de que el tiempo de ejecución del programa paralelo vaya creciendo nos
+indica que hay muchos bloques que están a la espera de que el planificador los seleccione.
+Esto se debe a que disponemos de una gráfica con unos pocos SM, los cuáles están ocupados
+la mayoría del tiempo, y por tanto, la mayoría de bloques estarán a la espera durante
+bastante tiempo. Si tuviésemos más SMs, quizás los tiempos podrían ser algo menores.
+
 Una vez que hemos analizado los tiempos, vamos a hacer un pequeño estudio de la ganancia.
-A continuación se ofrece una gráfica con los valores obtenidos según el tamaño del problema
+A continuación se ofrece una tabla con los valores obtenidos según el tamaño del problema
 de forma ordenada (como en el caso anterior), además de una gráfica que muestra la evolución
 de la ganancia:
 
@@ -436,25 +457,30 @@ de la ganancia:
 
 Tal y como podemos ver en la gráfica y en la tabla, la ganancia obtenida es bastante grande y
 va aumentando a medida que aumenta el tamaño de los vectores de entrada. Empieza con un
-valor próximo a 10 y va creciendo hasta llegar a 17, donde se mantiene más o menos hasta
-el final. Solo se produce una bajada cuando los vectores tienen 25000 elementos, pero si
-analizamos los resultados de la tabla de tiempos \ref{tab:times} vemos que esto se debe a
-que el incremento de tiempo al pasar de 20480 a 25000 elementos es del 25\% en el
-caso secuencial, mientras que en el paralelo es de aproximadamente un 35\%. Por tanto, como
-es lógico, la ganancia obtenida será menor, ya que el tiempo paralelo ha aumentado en mayor
-mayor medida.
+valor algo más grande que 7 y va creciendo hasta llegar a un valor próximo a 15, y a partir
+de ahí va subiendo y bajando pero manteniéndose próxima a este valor. El motivo por el
+que se producen bajadas se debe a que en algunos casos la tasa de crecimiento del tiempo
+secuencial es algo inferior a la del tiempo paralelo, haciendo por tanto que la ganancia
+sea menor.
 
-Podemos ver que la ganancia crece mucho entre los 500 y los 10240 elementos. Esto se
-debe, tal y como comentamos anteriormente, a que los tiempos secuenciales crecen mucho
-más rápido que los paralelos en estos casos. A partir de ahí, al crecer los dos tiempos a
-un ritmo más o menos parecido la ganancia se mantiene más o menos igual, excepto en el caso
-que hemos comentado en el párrafo anterior. Parece que, en general, para tamaños relativamente
-grandes la ganancia tiene un valor en torno a 17. Si tuviésemos problemas
-más grandes veríamos que la ganancia se sigue manteniendo en torno a dicho valor, fluctuando
-ligeramente. Sin embargo, una ganancia de 17 es algo bastante considerable, ya que eso significa
-que para problemas muy grandes tardaríamos 17 veces menos con el programa paralelo que
-con el secuencial. Además de eso, si dispusiéramos de una \texttt{GPU} más potente, la
-ganancia podría ser mucho mayor que la que tenemos aquí.
+Podemos ver que la ganancia crece mucho entre los 500 y los 20480 elementos. Esto se
+debe a que, tal y como comentamos anteriormente, los tiempos secuenciales crecen mucho
+más rápido que los paralelos en estos casos. A partir de ahí, la ganancia oscial alrededor
+de 15, bajando en algunos casos por los motivos comentados anteriormente, y subiendo de
+nuevo hacia el final. Posiblemente, si probásemos con un problema mucho más grande, la ganancia
+obtenida podría estar en torno a 15 o aproximarse ligeramente a 16 debido a que los tiempos
+secuencial y paralelo crecen de forma más o menos pareja para problemas grandes.
+
+Parece que, en general, la ganancia máxima que se puede conseguir con esta tarjeta es
+de aproximadamente 15, tal y como hemos comentado. Si tuviésemos una tarjeta gráfica más
+potente y con más SMs, los tiempos posiblemente serían mucho más pequeños, lo cuál a su vez
+supondría una mayor ganancia. No obstante, tener una ganancia cercana a 15 para problemas grandes
+no es ninguna tontería. Por ejemplo, un problema muy grande que tardase unos 60 minutos en la
+versión secuencial podría ser resuelto por la versión paralela en tan solo 4 minutos, lo cuál
+nos muestra la abismal diferencia que hay entre la versión paralela y la secuencial.
+Por tanto, a pesar de que la \texttt{GPU} no sea todo lo potente que quisiéramos, nos permite
+resolver resolver problemas grandes en mucho menos tiempo, y por tanto, merece la pena
+paralelizarlos mediante \texttt{CUDA}.
 
 \section{Conclusiones}
 
@@ -467,18 +493,24 @@ que es con lo que hemos estado comparando el rendimiento de nuestra tarjeta grá
 Las \texttt{GPUs} permiten obtener una ganancia extremadamente alta y son muy útiles en
 programas que manejen grandes cantidades de datos, como cálculo muy intensivo, gráficos,
 \textit{machine learning} y, sobre todo, en \textit{deep learning}, donde juegan un papel
-esencial en el entrenamiento de las redes profundas.
+fundamental en el entrenamiento de las redes profundas.
 
-No obstante, es de menester recordar que las tarjetas gráficas no son la solución a todo.
-En problemas que requieren mucha sincronización o dependencias entre los datos no es la
-mejor idea utilizarlas, ya que los tiempos de comunicación son un grandísimo problema, sobre
-todo en arquitecturas de este tipo. Además, los tiempos de comunicación entre el \textit{host}
-y el dispositivo pueden llegar a ser bastante elevados, con lo cuál si no se dispone de una
-cantidad de datos suficiente, la mayor parte del tiempo se va a estar enviando y recibiendo la
-información, lo cuál negaría completamente cualquier ganancia que permita obtener la tarjeta si
-una versión secuencial es capaz de hacerlo en el mismo tiempo. Por tanto, hace falta analizar muy
-bien el problema para determinar qué tipo de paradigma y tecnología son los más adecuados de
-utilizar.
+No obstante, es de menester recordar que las tarjetas gráficas no son la solución a todos
+los problemas. Por ejemplo, si estamos ante un problema que requiera mucha sincronización
+y/o comunicación, posiblemente lo mejor sería escoger otro paradigma/lenguaje, ya que
+las tarjetas gráficas están especializadas sobre todo en problemas del tipo SPMD, mientras que
+para otro tipo de problemas como por ejemplo maestro/esclavo no son tan buenas. Además, los
+tiempos de comunicación entre el \textit{host} y el dispositivo pueden llegar a ser bastante
+elevados, con lo cuál si no se dispone de una cantidad de datos suficiente, la mayor parte del
+tiempo se va a estar enviando y recibiendo la información, lo cuál negaría completamente
+cualquier ganancia que permita obtener la tarjeta si una versión secuencial es capaz de
+hacerlo en el mismo tiempo. Otra cosa que hay que tener en cuenta es que, debido a que todas
+las hebras ejecutan el mismo código, introducir bloques condicionales en los \textit{kernels}
+es contraproducente, ya que solo se relantizaría el tiempo de ejecución, haciendo que la
+ejecución sea casi secuencial.
+
+Por tanto, debemos, antes de nada, entender el tipo de problema al que nos estamos enfrentando,
+determinar cuál es la mejor metodología a seguir y resolverlo con las herramientas más adecuadas.
 
 
 \newpage
