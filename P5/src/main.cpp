@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 
     // Load image
     std::vector<float> image = loadExpandImage(argv[1], width, height, borderSize);
-    medianFilter(image.data(), width, height, kernelSize);
+    medianFilter(image.data(), width, height, kernelSize, 16);
     saveImage(image.data(), width + 2*borderSize, height + 2*borderSize);
 
     return 0;
