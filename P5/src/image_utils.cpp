@@ -1,23 +1,9 @@
 #include "image_utils.h"
 #include <iostream>
+#include "CImg.h"
 
 using namespace cimg_library;
 using namespace std;
-
-vector<float> loadExpandImage(const char* imagePath, int width, int height, int borderSize)
-{
-    // Load image
-    CImg<float> srcImage(imagePath);
-    srcImage.channel(0);
-
-    // Expand image and get pixels from it
-    CImg<float> expandedImage = addBordersToImage(srcImage, borderSize);
-
-    vector<float> pixels(expandedImage.data(),
-                         expandedImage.data() + (width + 2*borderSize) * (height + 2*borderSize));
-
-    return pixels;
-}
 
 void fillEdgesWithValue(CImg<float>& img, float value, int x0, int y0, int xFinal, int yFinal)
 {
@@ -101,6 +87,22 @@ CImg<float> addBordersToImage(const CImg<float> &image, int borderSize)
 
     return expandedImage;
 }
+
+vector<float> loadExpandImage(const char* imagePath, int width, int height, int borderSize)
+{
+    // Load image
+    CImg<float> srcImage(imagePath);
+    srcImage.channel(0);
+
+    // Expand image and get pixels from it
+    CImg<float> expandedImage = addBordersToImage(srcImage, borderSize);
+
+    vector<float> pixels(expandedImage.data(),
+                         expandedImage.data() + (width + 2*borderSize) * (height + 2*borderSize));
+
+    return pixels;
+}
+
 
 void saveImage(float* pixels, int width, int height)
 {
