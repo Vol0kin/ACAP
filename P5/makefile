@@ -10,7 +10,7 @@ NVCC = /usr/local/cuda/bin/nvcc
 CC = g++
 
 FLAGS = -L/usr/local/cuda/lib64 -lcudart -lcuda -lm -lpthread -lX11
-ARCH = -m64
+NFLAGS = -m64 --std=c++11
 
 
 all: $(BIN) $(OBJ) $(BIN)/medianFilter 
@@ -31,7 +31,7 @@ $(OBJ)/main.o: $(SRC)/main.cpp
 	$(CC) -c $< -I $(INCLUDE) -o $@
 
 $(OBJ)/medianKernel.o: $(SRC)/medianKernel.cu
-	$(NVCC) $(ARCH) -c $< -I $(INCLUDE) -o $@
+	$(NVCC) $(NFLAGS) -c $< -I $(INCLUDE) -o $@
 
 clean:
 	rm -rf $(BIN) $(OBJ)
