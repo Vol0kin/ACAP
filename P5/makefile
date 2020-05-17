@@ -11,6 +11,7 @@ CC = g++
 
 FLAGS = -L/usr/local/cuda/lib64 -lcudart -lcuda -lm -lpthread -lX11
 NFLAGS = -m64 --std=c++11
+OPT = -O2
 
 
 all: $(BIN) $(OBJ) $(BIN)/medianFilter 
@@ -25,10 +26,10 @@ $(BIN)/medianFilter: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@ $(FLAGS)
 
 $(OBJ)/image_utils.o: $(SRC)/image_utils.cpp
-	$(CC) -c $<  -I $(INCLUDE) -o $@
+	$(CC) -c $<  -I $(INCLUDE) $(OPT) -o $@
 
 $(OBJ)/main.o: $(SRC)/main.cpp
-	$(CC) -c $< -I $(INCLUDE) -o $@
+	$(CC) -c $< -I $(INCLUDE) $(OPT) -o $@
 
 $(OBJ)/medianKernel.o: $(SRC)/medianKernel.cu
 	$(NVCC) $(NFLAGS) -c $< -I $(INCLUDE) -o $@

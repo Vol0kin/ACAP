@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include <chrono>
 
 using namespace cimg_library;
 
@@ -164,7 +165,14 @@ int main(int argc, char* argv[])
     unsigned char * pixels = image.data();
     int numPixels = image.size();
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     CImg<unsigned char> finalImage = medianFilter(image, kernelSize, borderSize);
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    double execTime = std::chrono::duration<double>(t2 - t1).count();
+
+    std::cout << "Time: " << execTime << std::endl;
 
     // Display the image
     CImgDisplay display(finalImage,  "This is a very cool image");

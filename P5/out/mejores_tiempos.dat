@@ -1,0 +1,29 @@
+------------------------------------------------
+SECUENCIAL
+
+
+Buho: 0.520567
+Ilusion: 27.5843
+
+------------------------------------------------
+MPI
+
+Buho 1 proc: 0.63842
+Buho 2 proc: 0.425036
+Buho 4 proc: 0.316762
+
+Ilusion 1 proc: 29.0834
+Ilusion 2 proc: 17.3477
+Ilusion 4 proc: 10.0926
+
+
+------------------------------------------------
+CUDA
+
+Buho 1 pixeles por eje: 0.708568
+Buho 2 pixeles por eje: 0.296242
+Buho 4 pixeles por eje: 0.250583
+
+Ilusion 1 pixeles por eje: 44.9549
+Ilusion 2 pixeles por eje: 17.9155
+Ilusion 4 pixeles por eje: 15.6332
