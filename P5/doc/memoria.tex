@@ -10,6 +10,7 @@
 \usepackage{enumitem}						% Permitir enumerate con distintos simbolos
 \usepackage[T1]{fontenc}					% Usar textsc en sections
 \usepackage{amsmath}						% Símbolos matemáticos
+\usepackage{multirow}
 
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
@@ -446,6 +447,10 @@ el único que nos permite tener más de 32 hebras por bloque con todas las confi
 es el tamaño de un \textit{warp}. De esta forma tendremos 1024, 256 y 64 hebras por bloque,
 respectivamente. El tamaño del filtro de nuevo será de $7 \times 7$.
 
+Tal y como hicimos anteriormente, se va a medir el tiempo que tarda en copiarse la imagen
+a la memoria del dispositivo, el tiempo de ejecución del \textit{kernel} y el tiempo que tarda
+en transferirse la imagen resultado del dispositivo al \textit{host}.
+
 Con los tiempos medidos de la versión de \texttt{CUDA} haremos un pequeño estudio de la ganancia,
 comparándolos claro está con la versión secuencial. Además, compararemos los tiempos de ejecución
 de las tres versiones con los casos más favorables para ver cuál de ellas es la mejor en cada
@@ -453,7 +458,65 @@ caso.
 
 \section{Resultados obtenidos}
 
+Tal y como se comentó anteriormente, se han hecho 3 ejecuciones con cada configuración.
+A continuación se ofrece una tabla con los resultados, destacando en negrita los mejores:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Píxeles que calcula cada\\ hebra en cada dimensión\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo problema\\ pequeño (s)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo problema\\ grande (s)\end{tabular}} \\ \hline
+\multirow{3}{*}{1} & 0.787811 & 45.2461 \\ \cline{2-3} 
+ & \textbf{0.708568} & \textbf{44.9549} \\ \cline{2-3} 
+ & 0.726259 & 45.1012 \\ \hline
+\multirow{3}{*}{2} & \textbf{0.296242} & \textbf{17.9155} \\ \cline{2-3} 
+ & 0.298811 & 18.0785 \\ \cline{2-3} 
+ & 0.305204 & 18.0178 \\ \hline
+\multirow{3}{*}{4} & 0.288754 & \textbf{15.6332} \\ \cline{2-3} 
+ & \textbf{0.250583} & 15.6645 \\ \cline{2-3} 
+ & 0.256281 & 15.9279 \\ \hline
+\end{tabular}
+\caption{Tiempos obtenidos para las distintas configuraciones de granularidad para los dos problemas. En negrita los mejores tiempos.}
+\label{tab:times}
+\end{table}
+
+Si observamos la tabla, podemos ver que para los dos problemas, a medida que aumenta la
+granularidad, el tiempo de ejecución va disminuyendo. El cambio más drástico se produce
+al pasar de que cada hebra procese 1 píxel por cada dimensión (es decir, de procesar regiones
+$1 \times 1$) a procesar 2 píxeles por cada dimensión, o lo que viene siendo lo mismo, regiones
+de $2 \times 2$. A groso modo, el tiempo de ejecución se reduce en aproxmadamente un 60\%, lo
+cuál es un porcentaje muy considerable. Al pasar de de procesar 2 píxeles por cada dimensión a
+4, el tiempo de ejecución también se reduce, aunque lo hace de forma mucho menos pronunciada.
+
+Esta evolución puede verse más claramente en la siguiente gráfica:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{img/speed}
+  \caption{Evolución del tiempo de ejecución en función del número de píxeles que calcula
+  cada hebra en cada una de las dimensiones de la imagen, en escala logarítmica.}
+  \label{fig:time}
+\end{figure}
+
+El motivo por el que 
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{img/speedup}
+  \caption{Evolución de la ganancia en función del número de píxeles que calcula
+  cada hebra en cada una de las dimensiones de la imagen.}
+  \label{fig:speedup}
+\end{figure}
+
 \section{Comparativa}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{img/comparison}
+  \caption{Comparativa de los tiempos de ejecución para cada versión del programa en función
+  del tamaño del problema, en escala logarítmica.}
+\end{figure}
 
 \section{Conclusiones}
 
