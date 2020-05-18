@@ -498,8 +498,55 @@ Esta evolución puede verse más claramente en la siguiente gráfica:
   \label{fig:time}
 \end{figure}
 
-El motivo por el que 
+Un posible motivo por el que el tiempo decrezca tanto al pasar de que cada hebra procese 1
+píxel por cada dimensión a 2 es que esto provoca que haya una menor cantidad de hebras, pero
+cada una de ellas hace más trabajo. O lo que es lo mismo, cada bloque de hebras produce una
+salida del mismo tamaño, pero el trabajo que realiza cada hebra se ve incrementado. Esto, en
+resumidas cuentas, significa un aumento de la granularidad.
 
+En el primer caso, tenemos que para generar una región de la imagen de salida de $32 \times 32$
+se necesitan 1024 hebras, mientras que en el segundo caso solo se necesitan 256 hebras. Esta
+reducción del número de hebras implica bloques de hebras más pequeños, lo cuál a su vez implica
+que haya que sincronizar una menor cantidad de hebras (recordemos que se debe esperar a que la
+\textbf{ventana local} esté completamente cargada antes de continuar con la ejecución). Además,
+al ser los bloques de hebras más pequeños, esto implica que estos tengan que esperar menos tiempo
+para poder ser asignados a un procesador.
+
+Al pasar de que cada hebra procese 2 píxeles por dimensión a 4, el tiempo de ejecución se ve
+reducido en una menor medida, tal y como hemos comentado. Esto puede deberse a que la
+granularidad empieza a ser demasiado grande para la cantidad de hebras que hay. En este caso
+se tienen bloques de 64 hebras, y cada una de ellas genera una región de la imagen de salida
+de $4 \times 4$ píxeles. Esto implica que, al ser los bloques más pequeños, tienen que esperar
+menos a ser asignados a un procesador, pero este tiempo de espera posiblemente se vea afectado
+por la cantidad de trabajo que tiene que hace cada hebra. Al tener que hacer más trabajo, más
+tiempo se tardará en terminarlo.
+
+Si aumentásemos la granularidad y tuviésemos que cada hebra calcula 8 píxeles por dimensión,
+tendríamos bloques de 16 hebras en los que cada hebra calcula una región de $8 \times 8$. Esto
+sería contraproducente, ya que estaríamos desaprovechando potencia de cómputo al ser los bloques
+menores a lo que es un \textit{warp} de hebras, los cuáles son de 32 hebras, y además estaríamos
+cargando demasiado cada hebra. Esto implica que, si seguimos aumentando la granularidad, llegará
+en el momento en el que cada región de $32 \times 32$ se calcule secuencialemente, lo cuál
+implica desaprovechar demasiado la capacidad de los procesadores de la \texttt{GPU}.
+
+Una vez que hemos visto esto, vamos a hacer un pequeño estudio de la ganancia. Para obtener
+la ganancia, vamos a tener como \textbf{tiempo base para el problema pequeño 0.520567 segundos},
+mientras que para el \textbf{problema grande vamos a tener un tiempo base de 27.5843 segundos}.
+A continuación se puede ver una tabla con la ganancia para cada configuración para las
+distintas configuraciones, además de una gráfica que ilustra la evolución de la ganancia:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{\begin{tabular}[c]{@{}c@{}}Píxeles que calcula cada\\ hebra en cada dimensión\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Ganancia problema\\ pequeño\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Ganancia problema\\ grande\end{tabular}} \\ \hline
+1 & 0.735 & 0.614 \\ \hline
+2 & 1.757 & 1.54 \\ \hline
+4 & 2.077 & 1.764 \\ \hline
+\end{tabular}
+\caption{Ganancia obtenidos para las distintas configuraciones de granularidad para los dos problemas.}
+\label{tab:speedup}
+\end{table}
 
 \begin{figure}[H]
   \centering
@@ -509,7 +556,66 @@ El motivo por el que
   \label{fig:speedup}
 \end{figure}
 
+Como podemos ver tanto en la tabla como en la gráfica, la ganancia empieza siendo baja y va
+subiendo en los dos problemas. La ganancia crece más en el problema pequeño que en el grande,
+pero crece de manera más o menos igual en ambos problemas. Vemos que en ambos casos la ganancia
+crece mucho cuando se pasa de que cada hebra calcule 1 píxel pro dimensión a que calcule 2,
+mientras que crece menos al pasar de 2 a 4. Esto es completamente normal, ya que como pudimos
+ver en la figura \ref{fig:time}, el tiempo mejoró mucho menos al pasar de 2 a 4 píxeles por
+dimensión.
+
+Hay una serie de cosas que pueden llamar la atención. Por ejemplo, la ganancia para el caso
+en el que cada hebra calcula 1 píxel por dimensión está por debajo de 1, ya que el tiempo de
+ejecución de la versión de \texttt{CUDA} es inferior a la secuencial. Esto puede deberse
+a que hay demasiadas hebras por bloque con una granularidad demasiado pequeña, lo cuál hace
+que haya demasiados bloques inactivos en todo momento. Por tanto, para los dos problemas podríamos
+decir que la asignación de carga de trabajo \textit{naive} no da buenos resultados.
+
+Otra cosa que puede llamar la atención es que la ganancia obtenida en el problema grande es algo
+menor que la del pequeño. Esto puede deberse a que, dentro del tiempo medido, se tiene en
+cuenta también el tiempo de transferencia de los datos del \textit{host} al dispositivo
+y del dispositivo al \textit{host}. Al tener el problema grande una imagen bastante grande,
+estos tiempos son algo mayores, aunque tampoco demasiado, ya que el mayor parte del tiempo
+se dedica al cómputo, ya que como es obvio, hay una mayor cantidad de bloques.
+
+Por último, podemos ver que no obtenemos una ganancia demasiado grande en los dos problemas.
+Como mucho, en el problema pequeño y con la mayor granularidad, obtenemos una ganancia de
+aproximadamente 2. En el caso del problema grande dicha ganancia es aun menor, ya que 
+no llega ni a $1.8$. Muy posiblemente, si seguimos aumentando la granularidad del problema
+la ganancia crecerá o bien muy poco o bien empezará a decrecer debido a que se están
+desaprovechando los recursos del \textit{dispositivo}. Por tanto, el límite de la ganancia
+que tenemos en esta versión del programa es bastante pequeño, si lo comparamos con la
+que por ejemplo obtuvimos en el caso de \texttt{MPI}.
+
+Un posible motivo por el que los resultados no sean los esperados o lo suficientemente buenos
+puede deberse a que la tarjeta gráfica no sea lo suficientemente potente. Si tuviésemos una
+tarjeta más actual, los resultados posiblemente hubiesen sido muy diferentes, con unos
+mejores tiempos y una mejor ganancia. Por tanto, las limitaciones técnicas de la \texttt{GPU}
+han tenido su repercusión sobre los resultados. Recordemos que la tarjeta dispone de 5 SMs y
+de 128 SPs por SM. Si la gráfica fuese algo más potente, el número de SMs sería mayor, lo cuál
+implicaría poder ejecutar más bloques simultáneamente. Por tanto, estamos algo limitados
+en este aspecto, y con \textit{hardware} más actual los resultados hubiesen sido bastante
+distintos.
+
 \section{Comparativa}
+
+Una vez que hemos estudiado qué tal se comporta la versión de \texttt{CUDA} del programa,
+vamos a comparar las tres versiones para ver cómo se comporta cada una de ellas en cada problema.
+A continuación se ofrece una tabla con los casos más favorables para cada versión y cada problema,
+acompañada de un gráfico de barras que agrupa los tiempos en función del problema:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Versión del programa} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo problema\\ pequeño (s)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Tiempo problema\\ grande (s)\end{tabular}} \\ \hline
+Secuencial & 0.520567 & 27.5843 \\ \hline
+MPI & 0.316762 & 10.0926 \\ \hline
+CUDA & 0.250583 & 15.6332 \\ \hline
+\end{tabular}
+\caption{Tiempos de ejecución más favorables para cada problema para las tres versiones del programa.}
+\label{tab:times-versions}
+\end{table}
 
 \begin{figure}[H]
   \centering
@@ -518,8 +624,95 @@ El motivo por el que
   del tamaño del problema, en escala logarítmica.}
 \end{figure}
 
+Como podemos ver, en los dos problemas la peor versión es la secuencial, ya que es la
+que más tarda. La versión de \texttt{MPI} se queda un poco por detrás de la de \texttt{CUDA}
+en el problema pequeño, mientras que en el problema grande es mejor que esta última.
+
+El motivo por el que la versión de \texttt{CUDA} es más rápida que la de \texttt{MPI} en el
+problema pequeño puede deberse a que, en esta última versión, se tarde bastante tiempo en
+crear los procesos y asignar la carga de trabajo correspondiente en cada uno de ellos. Al
+trabajar \texttt{CUDA} con hebras, el tiempo de creación de una hebra es mucho menor
+que el de crear un proceso. Además, \texttt{CUDA} es más rápido en los tiempos de cómputo,
+ya que permite ejecutar la misma instrucción para un montón de hebras
+a la vez en vez de ejecutar el código de manera secuencial, que es lo que sucede con
+\texttt{MPI} (aunque el código secuencial en un principio se ejecuta en distintos
+cores/procesadores/nodos, dependiendo del equipo).
+
+No obstante, para el problema grande, tal y como hemos dicho anteriormente, \texttt{MPI}
+ofrece unos mejores tiempos que \texttt{CUDA}. El motivo por el que \texttt{CUDA} es más
+lento en este caso puede deberse a que, para este problema, hay demasiados bloques de
+hebras. A esto, si le sumamos las limitaciones del \textit{hardware} que comentamos
+anteriormente, hace que haya muchos bloques que estén a la espera de ser asignados y ejecutados.
+Por tanto, aunque el tiempo de inicialización de los procesos y de la distribución 
+de la carga de trabajo sean superiores en \texttt{MPI}, y aunque el código de
+\texttt{MPI} se ejecute secuencialmente, una vez que los procesos reciben su carga de
+trabajo ya pueden empezar a trabajar sin esperar nada más, a diferencia de los bloques
+de \texttt{CUDA}, los cuáles deben esperar a que se libere el procesador para poder
+empezar a ser ejecutados.
+
+No obstante, cabe destacar que \texttt{MPI} funciona muy bien en computación distribuida y
+en problemas muy grandes, ya que permite aprovechar el cómputo de distintos equipos. Por tanto,
+no es de extrañar que ofrezca buenos resultados en problemas grandes. También cabe destacar
+que los resultados de \texttt{CUDA} en el caso del problema grande sean malos, sino todo lo
+contrario. Posiblemente con una tarjeta más actual, los resultados hubiesen sido muy diferentes,
+ya que estas al disponer de un mayor número de SMs, harían que los tiempos de ejecución fuesen
+más bajos, ya que habría menos bloques esperando. Pero aun así, con todas las limitaciones,
+\texttt{CUDA} ha demostrado ofrecer unos resultados aceptables incluso en problemas
+grandes.
+
 \section{Conclusiones}
 
+En esta práctica hemos visto cómo se puede paralelizar el filtro de la mediana
+en \texttt{CUDA} y cómo se puede hacer dicha paralelización de forma que las hebras
+tengan una carga de trabajo variable.
+
+Al hacer un estudio de los tiempos de ejecución y de la ganancia, nos hemos dado cuenta de
+que es muy importante encontrar un equilibrio entre el tamaño de los bloques de hebras y la
+cantidad de trabajo que tenga que realizar cada hebra del bloque. Tener bloques de hebras
+demasiado grandes con poca carga de trabajo por hebra puede implicar que muchos de los bloques
+estén esperando a ser asignados, mientras que tener bloques de hebras pequeños con mucha carga
+de trabajo por hebra puede significar que se estén desaprovechando los recursos de la tarjeta.
+
+También hemos visto que, en este caso, la ganancia obtenida estaba bastante limitada ganancia,
+muy posiblemente por las limitaciones de la tarjeta que se ha utilizado, y que probablemente
+con una tarjeta más actual o potente los resultados obtenidos podrían haber sido bastante mejores.
+
+También hemos hecho una comparación de los mejores tiempos de ejecución de todas las versiones.
+Ahí hemos visto que la versión secuencial, como era de esperarse, ha resultado ser la más lenta.
+En cuando a las versiones de \texttt{CUDA} y \texttt{MPI}, hemos visto que la primera ha ofrecido
+unos mejores resultados en el problema pequeño, mientras que la segunda lo ha hecho en el
+problema grande. De aquí podemos extraer algunas conclusiones:
+
+\begin{enumerate}
+	\item Paralelizar siempre nos va a permitir mejorar los tiempos de ejecución, aunque
+	hay que paralelizar ``con cabeza''. Es decir, no debemos hacer una paralelización excesiva
+	ya que introducirá demasiados tiempos de \textit{overhead}, lo cuál al final hará que
+	los tiempos empeoren.
+	\item \texttt{MPI} y \texttt{CUDA} han demostrado ofrecer unos muy buenos resultados
+	en ambos problemas, y son opciones muy interesantes que deben ser consideradas a la hora
+	de paralelizar un algoritmo. Aunque, claro está, también depende del problema que nos
+	enfrentemos, ya que en algunos casos una de las metodologías va a funcionar mejor que
+	la otra.
+\end{enumerate}
+
+Por último, es importante destacar una cosa. A pesar de que \texttt{MPI} y \texttt{CUDA} ofrecen
+filosofías diferentes, no son mútuamente excluyentes. Es más, podemos incluso combinarlas
+para ofrecer unos mejores resultados. Por ejemplo, si tenemos un problema extremadamente
+grande, podemos partirlo en problemas más pequeños y enviarlos a los distintos nodos de cómputos
+de los que dispongamos. Dentro de esos nodos podemos utilizar las tarjetas gráficas para ejecutar
+muy rápidamente el código. Una vez que se obtengan los resultados, se enviarían al nodo maestro
+que ha hecho la división de trabajo. De esta manera, aprovecharíamos la facilidad que ofrece
+\texttt{MPI} de distribuir el trabajo entre distintos nodos y luego de juntar los resultados con
+la potencia de cómputo que ofrece \texttt{CUDA} al permitir ejecutar una misma instrucción
+sobre múltiples datos.
+
+Este es solo un ejemplo de cómo se podrían combinar dos filosofías diferentes para obtener
+los mejores resultados. Ahora bien, cuando estemos ante un problema, debemos estudiar
+qué filosofía se adapta mejor a éste, ya que no hay una solución universal que permita
+resolver cualquier tipo de problema. Debemos, además de eso, tener en cuenta los recursos
+de los que disponemos y cómo los podemos utilizar para resolver el problema al que
+nos vayamos a enfrentar. Cada problema es un mundo, y por tanto, cada uno de ellos
+puede ser resuelto de una manera diferente.
 
 \end{document}
 
