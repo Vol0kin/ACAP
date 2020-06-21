@@ -98,15 +98,15 @@ Según el trabajo, el tráfico de una red puede ser clasificado en dos categorí
 
 \begin{itemize}[label=\textbullet]
 	\item \textbf{Admisible}, si la cantidad de tráfico que se dirige a cada extremos de la red
-	no requiere más recursos de los que hay dispnibles. No genera como tal congestión
+	no requiere más recursos de los que hay disponibles. No genera como tal congestión
 	en los extremos pero sí que puede llegar a congestionar algún otro punto de la red
 	si por ejemplo hay un mal enrutamiento de la información.
 	\item \textbf{No admisible}, si la cantidad de tráfico que se dirige a cada extremos de la red
-	requiere más recursos de los que hay dispnibles. Este tipo de tráfico produce
+	requiere más recursos de los que hay disponibles. Este tipo de tráfico produce
 	congestión en los extremos.
 \end{itemize}
 
-La congestión que aparece en ambos casos causa algo llamado \textit{tree congestion}.
+La congestión que aparece en ambos casos causa algo llamado congestión de árbol.
 Cuando un nodo tiene su buffer de entrada lleno le indica
 a los nodos que le envían información que dejen de enviarle, ya que este no tiene capacidad
 para guardar información nueva. Por tanto, la información se comienza a acumular en los buffers 
@@ -243,7 +243,7 @@ obtuvieron unos peores resultados, pudiéndose apreciar la aparición de congest
 Finalmente se probó con una red donde no existía congestión con el objetivo de ver qué sobrecarga
 generaban los protocolos de control de congestión. Tomando como referencia una red sin control
 de congestión, se vio que a medida que aumenta el tráfico las dos propuestas se quedaban
-bastante cerda de la red sin control de congestión, indicando por tanto que en líneas generales
+bastante cerca de la red sin control de congestión, indicando por tanto que en líneas generales
 producen poca sobrecarga. ECN también se quedaba relativamente cerca, mientras que SRP se quedaba
 más atrás, lo cuál implica que es el protocolo que genera una mayor sobrecarga en la red.
 
