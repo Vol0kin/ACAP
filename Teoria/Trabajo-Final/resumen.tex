@@ -146,7 +146,7 @@ en caso de congestión. Si un paquete especulativo llega al destino correctament
 un \texttt{ACK}, y si es descartado por el camino debido a la congestión se devuelve un
 \texttt{NACK}. Cuando se recibe un \texttt{NACK} o la respuesta de la reserva se espera el tiempo
 indicado por $t_s$ y se mandan los paquetes en modo no especulativo, reenviando en el proceso
-aquellos que se han descratado. Estos paquetes viajan por un canal virtual de alta prioridad,
+aquellos que se han descartado. Estos paquetes viajan por un canal virtual de alta prioridad,
 evitando por tanto los posibles retrasos en colas en caso de que exista congestión.
 
 Este segundo protocolo funciona muy bien para controlar la congestión
